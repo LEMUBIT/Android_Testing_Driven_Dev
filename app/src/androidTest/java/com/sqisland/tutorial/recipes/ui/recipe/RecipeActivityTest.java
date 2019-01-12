@@ -5,6 +5,7 @@ import android.content.Intent;
 import com.sqisland.tutorial.recipes.R;
 import com.sqisland.tutorial.recipes.data.local.InMemoryFavorites;
 import com.sqisland.tutorial.recipes.injection.TestRecipeApplication;
+import com.sqisland.tutorial.recipes.test.RecipeRobot;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,23 +32,13 @@ public class RecipeActivityTest {
     public ActivityTestRule<RecipeActivity> activityTestRule
             = new ActivityTestRule<>(RecipeActivity.class, true, false);
 
-    private InMemoryFavorites favorites;
-
-    @Before
-    public void clearFavorites() {
-        TestRecipeApplication application = (TestRecipeApplication) InstrumentationRegistry.getInstrumentation().getTargetContext().getApplicationContext();
-        favorites = (InMemoryFavorites) application.getFavorites();
-        favorites.clear();
-    }
 
     @Test
     public void recipeNotFound() {
-        activityTestRule.launchActivity(null);
-        onView(withId(R.id.description))
-                .check(matches(withText(R.string.not_found)));
-
-        onView(withId(R.id.title))
-                .check(matches(not(isDisplayed())));
+        new RecipeRobot()
+                .launch(activityTestRule)
+                .noTitle()
+                .description(R.string.not_found);
     }
 
     @Test
@@ -63,9 +54,7 @@ public class RecipeActivityTest {
 
     @Test
     public void alreadyFavorite() {
-        favorites.put(CARROT_ID, true);
-        launchRecipe(CARROT_ID);
-        onView(withId(R.id.title)).check(matches(isSelected()));
+        new RecipeRobot().setFavorite(CARROT_ID).launch(activityTestRule,CARROT_ID).isFavorite();
     }
 
     private void launchRecipe(String id) {
